@@ -7,6 +7,7 @@
 ### Autonomous Evidentiary GovTech Agent Fleet for State Governments
 ### Google "All Things Agentic" Hackathon — **Track 3: The Fortified Enterprise Fleet**
 
+[![YouTube Demo](https://img.shields.io/badge/YouTube-Watch_Demo_Video-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://youtu.be/tjn1DVVB7-E)
 [![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Gemini 3.5 Flash](https://img.shields.io/badge/Gemini_3.5_Flash-Core_LLM-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Gemma 2 Model Armor](https://img.shields.io/badge/Gemma_2-Model_Armor_Shield-EA4335?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
@@ -20,9 +21,11 @@
 
 ---
 
-> **🎬 Watch the Full Demo**
+> ### 📺 **Official Video Demonstration & Architecture Walkthrough**
 >
-> [![PramanAI Demo Video](./assets/images/demo_thumbnail.png)](https://www.youtube.com/watch?v=pramanai-demo)
+> [![PramanAI Demo Video](./assets/images/demo_thumbnail.png)](https://youtu.be/tjn1DVVB7-E)
+>
+> **▶️ [Click to Watch Full Video on YouTube (https://youtu.be/tjn1DVVB7-E)](https://youtu.be/tjn1DVVB7-E)**
 >
 > *Live Multi-Part Hindi Query Demonstration • Google Cloud Run Deployment Proof • Secretariat Note-Sheet PDF Export*
 
