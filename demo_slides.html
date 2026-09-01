@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PramanAI — Autonomous Evidentiary GovTech Agent Fleet • Google Agentic Hackathon Track 3</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Inter:wght@300;400;500;600;700;800;900&family=Tiro+Devanagari+Hindi:ital@0;1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background: #08090C;
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      color: #F8FAFC; cursor: pointer; user-select: none;
+    }
+
+    .font-devanagari {
+      font-family: "Tiro Devanagari Hindi", "Inter", serif;
+    }
+    .font-cinzel {
+      font-family: "Cinzel", Georgia, serif;
+    }
+
+    /* ─── SLIDES TRANSITIONS ───────────────────────────────── */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity .55s cubic-bezier(.16,1,.3,1), transform .55s cubic-bezier(.16,1,.3,1);
+      transform: translateX(70px);
+    }
+    .slide.active    { opacity: 1; pointer-events: all; transform: translateX(0); }
+    .slide.exit-left { opacity: 0; transform: translateX(-70px); }
+    .slide.exit-right{ opacity: 0; transform: translateX(70px); }
+
+    /* ─── GLASS CARDS ─────────────────────────────────────── */
+    .glass         { background: rgba(255,255,255,.03); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.08); border-radius: 1.25rem; }
+    .glass-cyan    { background: rgba(6,182,212,.05);   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(6,182,212,.25);   border-radius: 1.25rem; }
+    .glass-indigo  { background: rgba(99,102,241,.06);  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(99,102,241,.28);  border-radius: 1.25rem; }
+    .glass-amber   { background: rgba(245,158,11,.05);  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(245,158,11,.25);  border-radius: 1.25rem; }
+    .glass-orange  { background: rgba(255,87,34,.06);   backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(255,87,34,.26);   border-radius: 1.25rem; }
+    .glass-em      { background: rgba(16,185,129,.05);  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid rgba(16,185,129,.24);  border-radius: 1.25rem; }
+
+    /* ─── GRADIENT TEXT ───────────────────────────────────── */
+    .gt-white   { background: linear-gradient(135deg,#ffffff 0%,#f1f5f9 50%,#94a3b8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-cyan    { background: linear-gradient(135deg,#06B6D4 0%,#38BDF8 50%,#A5F3FC 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-indigo  { background: linear-gradient(135deg,#6366F1 0%,#818CF8 50%,#C7D2FE 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-amber   { background: linear-gradient(135deg,#F59E0B 0%,#FBBF24 50%,#FEF08A 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-orange  { background: linear-gradient(135deg,#FF5722 0%,#FF8A65 50%,#FFCCBC 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-em      { background: linear-gradient(135deg,#10B981 0%,#34D399 50%,#A7F3D0 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-saffron { background: linear-gradient(135deg,#FF9933 0%,#FFB74D 50%,#FFFFFF 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    /* ─── AMBIENT GLOWS ───────────────────────────────────── */
+    .amb-obsidian{ background: radial-gradient(ellipse 70% 50% at 50% 10%, rgba(30,41,59,.4) 0%, transparent 80%), #08090C; }
+    .amb-amber   { background: radial-gradient(ellipse 65% 45% at 75% 25%, rgba(245,158,11,.10) 0%, transparent 70%),
+                               radial-gradient(ellipse 50% 40% at 20% 80%, rgba(255,87,34,.06) 0%, transparent 60%), #08090C; }
+    .amb-cyan    { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(6,182,212,.11) 0%, transparent 65%),
+                               radial-gradient(ellipse 60% 40% at 15% 85%, rgba(99,102,241,.09) 0%, transparent 60%), #08090C; }
+    .amb-dual    { background: radial-gradient(ellipse 65% 45% at 85% 30%, rgba(99,102,241,.12) 0%, transparent 60%),
+                               radial-gradient(ellipse 60% 40% at 15% 70%, rgba(6,182,212,.08) 0%, transparent 60%), #08090C; }
+    .amb-em      { background: radial-gradient(ellipse 65% 45% at 75% 25%, rgba(16,185,129,.10) 0%, transparent 70%),
+                               radial-gradient(ellipse 55% 40% at 20% 80%, rgba(6,182,212,.08) 0%, transparent 60%), #08090C; }
+
+    /* ─── METRIC CARDS ────────────────────────────────────── */
+    .metric-cyan   { background: rgba(6,182,212,.06);  border: 1px solid rgba(6,182,212,.28);  border-radius: 1rem; padding: 1.15rem 1.25rem; }
+    .metric-indigo { background: rgba(99,102,241,.06); border: 1px solid rgba(99,102,241,.28); border-radius: 1rem; padding: 1.15rem 1.25rem; }
+    .metric-amber  { background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.28); border-radius: 1rem; padding: 1.15rem 1.25rem; }
+    .metric-orange { background: rgba(255,87,34,.06);  border: 1px solid rgba(255,87,34,.28);  border-radius: 1rem; padding: 1.15rem 1.25rem; }
+    .metric-em     { background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.28); border-radius: 1rem; padding: 1.15rem 1.25rem; }
+
+    /* ─── FEATURE ICONS ───────────────────────────────────── */
+    .feat-icon-cyan   { width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:rgba(6,182,212,.12); border:1px solid rgba(6,182,212,.35); border-radius:12px; flex-shrink:0; }
+    .feat-icon-cyan svg { width:21px; height:21px; stroke:#06B6D4; }
+    .feat-icon-indigo { width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.35); border-radius:12px; flex-shrink:0; }
+    .feat-icon-indigo svg { width:21px; height:21px; stroke:#818CF8; }
+    .feat-icon-amber  { width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.35); border-radius:12px; flex-shrink:0; }
+    .feat-icon-amber svg { width:21px; height:21px; stroke:#F59E0B; }
+    .feat-icon-em     { width:44px; height:44px; display:flex; align-items:center; justify-content:center; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.35); border-radius:12px; flex-shrink:0; }
+    .feat-icon-em svg { width:21px; height:21px; stroke:#10B981; }
+
+    /* ─── PILL BADGES ─────────────────────────────────────── */
+    .pill-cyan   { display:inline-flex; align-items:center; gap:8px; background:rgba(6,182,212,.12);  border:1px solid rgba(6,182,212,.38);  border-radius:999px; padding:6px 18px; width:fit-content; }
+    .pill-indigo { display:inline-flex; align-items:center; gap:8px; background:rgba(99,102,241,.12); border:1px solid rgba(99,102,241,.38); border-radius:999px; padding:6px 18px; width:fit-content; }
+    .pill-amber  { display:inline-flex; align-items:center; gap:8px; background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.38); border-radius:999px; padding:6px 18px; width:fit-content; }
+    .pill-orange { display:inline-flex; align-items:center; gap:8px; background:rgba(255,87,34,.12);  border:1px solid rgba(255,87,34,.38);  border-radius:999px; padding:6px 18px; width:fit-content; }
+    .pill-em     { display:inline-flex; align-items:center; gap:8px; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.38); border-radius:999px; padding:6px 18px; width:fit-content; }
+
+    /* ─── IMAGE GLOWS ─────────────────────────────────────── */
+    .img-glow-amber  { border:1px solid rgba(245,158,11,.32); box-shadow:0 0 50px rgba(245,158,11,.22), 0 28px 65px rgba(0,0,0,.75); border-radius:1.25rem; }
+    .img-glow-cyan   { border:1px solid rgba(6,182,212,.32);  box-shadow:0 0 55px rgba(6,182,212,.24), 0 28px 65px rgba(0,0,0,.75); border-radius:1.25rem; }
+    .img-glow-indigo { border:1px solid rgba(99,102,241,.32); box-shadow:0 0 55px rgba(99,102,241,.24), 0 28px 65px rgba(0,0,0,.75); border-radius:1.25rem; }
+    .img-glow-em     { border:1px solid rgba(16,185,129,.32); box-shadow:0 0 50px rgba(16,185,129,.22), 0 28px 65px rgba(0,0,0,.75); border-radius:1.25rem; }
+
+    /* ─── CTA BANNER & WRAPPERS ───────────────────────────── */
+    .cta-banner  { background:linear-gradient(135deg,rgba(6,182,212,.14),rgba(99,102,241,.08)); border:1px solid rgba(6,182,212,.38); border-radius:1.25rem; animation:glowPulseC 3s ease-in-out infinite; }
+
+    /* ─── PROGRESS ────────────────────────────────────────── */
+    .prog-track { height:3px; background:rgba(255,255,255,.06); }
+    .prog-fill  { height:100%; border-radius:2px; background:linear-gradient(90deg,#06B6D4,#6366F1,#F59E0B); transition:width .5s cubic-bezier(.16,1,.3,1); }
+
+    /* ─── KEYFRAMES & ANIMATIONS ──────────────────────────── */
+    @keyframes float     { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-12px)} }
+    @keyframes float1    { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-8px)} }
+    @keyframes glowPulseC{ 0%,100%{box-shadow:0 0 20px rgba(6,182,212,.2)} 50%{box-shadow:0 0 50px rgba(6,182,212,.55), 0 0 100px rgba(6,182,212,.18)} }
+    @keyframes glowPulseG{ 0%,100%{box-shadow:0 0 20px rgba(16,185,129,.2)} 50%{box-shadow:0 0 50px rgba(16,185,129,.55), 0 0 100px rgba(16,185,129,.18)} }
+    @keyframes dotPulse  { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.3; transform:scale(.85);} }
+
+    .float-a   { animation: float  6s ease-in-out infinite; }
+    .float-b   { animation: float1 6s ease-in-out 1.2s infinite; }
+    .pulse-dot { animation: dotPulse 2s infinite; }
+    ::-webkit-scrollbar { display: none; }
+
+    /* ─── IMAGE PLACEHOLDER FALLBACK ──────────────────────── */
+    .img-placeholder {
+      width: 100%; height: 100%;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #0d131f, #1e293b, #0d131f);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      border: 1px dashed rgba(6,182,212,.3);
+    }
+    .img-placeholder svg { width:48px; height:48px; stroke:rgba(6,182,212,.4); }
+    .img-placeholder span { font-size:12px; color:rgba(148,163,184,.6); font-weight:500; }
+
+    /* ─── STEP BADGES ─────────────────────────────────────── */
+    .step-node {
+      display:flex; align-items:center; gap:12px; padding:12px 16px;
+      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+      border-radius:10px; transition:all .2s ease;
+    }
+    .step-node:hover {
+      background:rgba(6,182,212,.08); border-color:rgba(6,182,212,.35);
+      transform:translateX(4px);
+    }
+    .step-num {
+      width:26px; height:26px; border-radius:7px; background:rgba(6,182,212,.18);
+      color:#38BDF8; font-weight:800; font-size:11.5px; display:flex; align-items:center; justify-content:center;
+      flex-shrink:0; border:1px solid rgba(6,182,212,.35);
+    }
+
+    /* ─── DOT NAVIGATION ──────────────────────────────────── */
+    .nav-dot {
+      width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.18);
+      transition:all .3s ease; cursor:pointer;
+    }
+    .nav-dot.active {
+      width:22px; border-radius:999px; background:linear-gradient(90deg,#06B6D4,#6366F1);
+      box-shadow:0 0 10px rgba(6,182,212,.6);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════ TOP HEADER ════════════════════════════ -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:100;height:58px;
+            background:rgba(8,9,12,.94);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+            border-bottom:1px solid rgba(255,255,255,.07);
+            display:flex;align-items:center;justify-content:space-between;padding:0 36px;">
+  
+  <!-- Left: Emblem + Brand Title -->
+  <div style="display:flex;align-items:center;gap:14px;">
+    <img src="Praman_AI_logo.png" id="pLogo" alt="PramanAI Logo"
+         style="width:36px;height:36px;border-radius:9px;object-fit:cover;box-shadow:0 0 16px rgba(6,182,212,.4);border:1px solid rgba(255,255,255,.15);"
+         onerror="this.src='presentations/Praman_AI_logo.png'; this.onerror=function(){this.style.display='none';document.getElementById('pLogoFallback').style.display='flex';};" />
+    <div id="pLogoFallback" style="display:none;width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#06B6D4,#6366F1,#F59E0B);align-items:center;justify-content:center;box-shadow:0 0 16px rgba(6,182,212,.4);">
+      <span class="font-devanagari" style="font-size:20px;font-weight:900;color:#ffffff;line-height:1;margin-top:-2px;">प्र</span>
+    </div>
+    <div style="display:flex;flex-direction:column;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="font-cinzel" style="font-size:16px;font-weight:900;letter-spacing:.06em;color:#ffffff;">PRAMAN<span style="color:#06B6D4;">AI</span></span>
+        <span style="font-size:10px;font-weight:700;color:rgba(255,255,255,.3);background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,.08);">GovTech Agent Fleet</span>
+      </div>
+      <span class="font-devanagari" style="font-size:10.5px;color:rgba(255,255,255,.45);letter-spacing:.02em;margin-top:-1px;">
+        स्वायत्त साक्ष्य आधारित प्रशासनिक निर्णय प्रणाली
+      </span>
+    </div>
+  </div>
+
+  <!-- Center: Track Info -->
+  <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);padding:4px 14px;border-radius:999px;">
+    <span style="font-size:11px;font-weight:600;color:rgba(255,255,255,.5);">Google "All Things Agentic" Hackathon</span>
+    <span style="color:rgba(255,255,255,.2);">&bull;</span>
+    <span style="font-size:11px;font-weight:700;color:#38BDF8;">Track 3: The Fortified Enterprise Fleet</span>
+  </div>
+
+  <!-- Right: Status Badge -->
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="pulse-dot" style="width:9px;height:9px;border-radius:50%;background:#10B981;box-shadow:0 0 14px rgba(16,185,129,.95);"></div>
+    <div style="display:flex;flex-direction:column;text-align:right;">
+      <span style="font-size:11.5px;font-weight:800;color:#10B981;letter-spacing:.03em;text-transform:uppercase;">Production Ready</span>
+      <span style="font-size:10px;font-weight:600;color:rgba(255,255,255,.35);">Google Cloud Run &bull; asia-south1</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════ PROGRESS BAR ════════════════════════ -->
+<div class="prog-track" style="position:fixed;top:58px;left:0;right:0;z-index:99;">
+  <div class="prog-fill" id="progressFill" style="width:20%;"></div>
+</div>
+
+<!-- ════════════════════════════ MINIMAL CORNER CONTROLS ═════════════ -->
+<!-- Subtle Center Nav Dots -->
+<div id="dotNav" style="position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;gap:7px;opacity:.65;transition:opacity .3s ease;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.65'">
+  <div class="nav-dot active" onclick="window.goToSlide(0)"></div>
+  <div class="nav-dot" onclick="window.goToSlide(1)"></div>
+  <div class="nav-dot" onclick="window.goToSlide(2)"></div>
+  <div class="nav-dot" onclick="window.goToSlide(3)"></div>
+  <div class="nav-dot" onclick="window.goToSlide(4)"></div>
+</div>
+
+<!-- Subtle Right Slide Counter -->
+<div id="slideCounter" style="position:fixed;bottom:14px;right:28px;z-index:100;
+     font-size:11px;font-weight:800;letter-spacing:.12em;
+     color:rgba(255,255,255,.3);text-transform:uppercase;background:rgba(255,255,255,.03);
+     border:1px solid rgba(255,255,255,.06);padding:3px 12px;border-radius:999px;">
+  1 / 5
+</div>
+
+<!-- ════════════════════════════ SLIDE CONTAINER ═════════════════════ -->
+<div id="slideContainer" style="position:fixed;top:58px;left:0;right:0;bottom:0;">
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 1 — THE CRISIS (THE ADMINISTRATIVE BOTTLENECK)
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide active amb-amber" id="slide-1">
+  <div style="width:100%;max-width:1440px;display:grid;grid-template-columns:1.08fr 1fr;gap:44px;padding:16px 56px;align-items:center;">
+
+    <!-- LEFT COLUMN -->
+    <div style="display:flex;flex-direction:column;gap:13px;">
+
+      <div class="pill-amber" style="padding:4px 14px;">
+        <div class="pulse-dot" style="width:6px;height:6px;border-radius:50%;background:#F59E0B;box-shadow:0 0 10px rgba(245,158,11,.9);"></div>
+        <span style="font-size:10.5px;font-weight:800;color:#FBBF24;letter-spacing:.08em;text-transform:uppercase;">
+          Critical Regulatory Challenge &bull; State Governments
+        </span>
+      </div>
+
+      <div>
+        <h1 style="font-size:clamp(1.65rem,2.5vw,2.35rem);font-weight:900;line-height:1.12;margin:0 0 8px;letter-spacing:-.03em;">
+          <span class="gt-white">The $10B Public Sector /</span><br/>
+          <span class="gt-amber">Administrative Bottleneck.</span>
+        </h1>
+        <p style="font-size:.85rem;color:rgba(255,255,255,.45);line-height:1.55;margin:0;">
+          Tens of thousands of legacy scanned Hindi Government Orders (GOs) and gazettes lie buried in physical archives. Officers make high-stakes executive decisions on superseded orders &mdash; triggering governance paralysis and contempt risks.
+        </p>
+      </div>
+
+      <!-- 3 Metrics Grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+        <div class="metric-amber" style="padding:10px 12px;border-radius:0.75rem;">
+          <div style="font-size:9.5px;font-weight:800;color:rgba(245,158,11,.75);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">Legacy Records</div>
+          <div style="font-size:1.6rem;font-weight:900;color:#FBBF24;line-height:1;letter-spacing:-.03em;">40,000+</div>
+          <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:3px;">Scanned Hindi GOs</div>
+        </div>
+        <div class="metric-orange" style="padding:10px 12px;border-radius:0.75rem;">
+          <div style="font-size:9.5px;font-weight:800;color:rgba(255,87,34,.75);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">Supersessions</div>
+          <div style="font-size:1.6rem;font-weight:900;color:#FF8A65;line-height:1;letter-spacing:-.03em;">72%</div>
+          <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:3px;">Untracked &amp; Silent</div>
+        </div>
+        <div class="metric-orange" style="padding:10px 12px;border-radius:0.75rem;">
+          <div style="font-size:9.5px;font-weight:800;color:rgba(239,68,68,.85);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;">Legal Liability</div>
+          <div style="font-size:1.6rem;font-weight:900;color:#F87171;line-height:1;letter-spacing:-.03em;">High Risk</div>
+          <div style="font-size:10.5px;color:rgba(255,255,255,.35);margin-top:3px;">Court Contempt Errors</div>
+        </div>
+      </div>
+
+      <!-- Key Vulnerability Callout -->
+      <div class="glass" style="padding:8px 14px;border-radius:0.75rem;display:flex;align-items:center;gap:10px;border-color:rgba(245,158,11,.2);">
+        <div style="width:28px;height:28px;border-radius:7px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i data-lucide="alert-triangle" style="width:14px;height:14px;stroke:#F59E0B;"></i>
+        </div>
+        <div style="font-size:11px;color:rgba(255,255,255,.6);line-height:1.4;">
+          <strong style="color:#fff;">Manual Search Latency:</strong> Officers spend <span style="color:#FBBF24;font-weight:700;">4.8 hours/week</span> validating whether a cited clause is still in force.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:530px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-32px;background:radial-gradient(ellipse at center,rgba(245,158,11,.2) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s1"
+          src="slide1_crisis.png"
+          alt="Public Sector Crisis - Archive Bottleneck"
+          class="img-glow-amber float-a"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+          onerror="this.src='presentations/slide1_crisis.png'; this.onerror=function(){this.style.display='none';document.getElementById('ph-s1').style.display='flex';};"
+        />
+        <div id="ph-s1" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide1_crisis.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 2 — INTRODUCING PRAMANAI (THE SOLUTION)
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-cyan" id="slide-2">
+  <div style="width:100%;max-width:1560px;display:grid;grid-template-columns:1.15fr 1fr;gap:48px;padding:32px 64px;align-items:center;">
+
+    <!-- LEFT HERO & FEATURES -->
+    <div style="display:flex;flex-direction:column;gap:22px;">
+
+      <div class="pill-cyan">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#06B6D4;box-shadow:0 0 10px rgba(6,182,212,.9);"></div>
+        <span style="font-size:11.5px;font-weight:800;color:#38BDF8;letter-spacing:.08em;text-transform:uppercase;">
+          Next-Gen GovTech Agent Fleet
+        </span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.9rem,3.5vw,3.1rem);font-weight:900;line-height:1.06;margin:0 0 14px;letter-spacing:-.03em;">
+          <span class="gt-cyan">PramanAI:</span> <span class="gt-white">Autonomous Evidentiary GovTech Fleet</span>
+        </h2>
+        <p style="font-size:.96rem;color:rgba(255,255,255,.5);line-height:1.72;margin:0;">
+          A sovereign, multi-persona AI agent fleet built natively on <strong>Google Gemini 3.5 Flash</strong> and <strong>Google Cloud</strong> that delivers 100% grounded, zero-hallucination regulatory synthesis with mathematical bounding-box evidence.
+        </p>
+      </div>
+
+      <!-- Feature Cards -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+
+        <div class="glass-cyan" style="padding:15px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon-cyan"><i data-lucide="sparkles"></i></div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;">Google Gemini 3.5 Flash &bull; Native VLM Ingestion</div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,.45);">300 DPI high-density multimodal OCR extracting complex Devanagari Hindi tables &amp; stamps</div>
+          </div>
+        </div>
+
+        <div class="glass-indigo" style="padding:15px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon-indigo"><i data-lucide="git-branch"></i></div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;">Bilingual Legal Reasoning &bull; Hindi &amp; English</div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,.45);">Cross-lingual intent expansion mapping English officer prompts to authentic Hindi gazette clauses</div>
+          </div>
+        </div>
+
+        <div class="glass-em" style="padding:15px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon-em"><i data-lucide="file-check"></i></div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;">1-Click Secretariat Note-Sheet &amp; Yellow Bounding-Box Grounding</div>
+            <div style="font-size:12.5px;color:rgba(255,255,255,.45);">Verifiable yellow bounding boxes on original PDFs with instant executive export</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:590px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(6,182,212,.22) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s2"
+          src="slide2_praman_hero.png"
+          alt="PramanAI Command Center Interface"
+          class="img-glow-cyan float-b"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+          onerror="this.src='presentations/slide2_praman_hero.png'; this.onerror=function(){this.style.display='none';document.getElementById('ph-s2').style.display='flex';};"
+        />
+        <div id="ph-s2" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide2_praman_hero.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 3 — TRACK 3 ARCHITECTURE (9-NODE LANGGRAPH STATEGRAPH)
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-dual" id="slide-3">
+  <div style="width:100%;max-width:1560px;display:grid;grid-template-columns:1.15fr 1fr;gap:48px;padding:32px 64px;align-items:center;">
+
+    <!-- LEFT: PIPELINE WORKFLOW -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <div class="pill-indigo">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#818CF8;box-shadow:0 0 10px rgba(99,102,241,.9);"></div>
+        <span style="font-size:11.5px;font-weight:800;color:#C7D2FE;letter-spacing:.08em;text-transform:uppercase;">
+          Multi-Agent Pipeline &bull; Orchestration
+        </span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.8rem,3.4vw,2.95rem);font-weight:900;line-height:1.06;margin:0 0 10px;letter-spacing:-.03em;">
+          <span class="gt-white">Deterministic 9-Node /</span><br/>
+          <span class="gt-cyan">LangGraph StateGraph Engine</span>
+        </h2>
+        <p style="font-size:.94rem;color:rgba(255,255,255,.48);line-height:1.65;margin:0;">
+          A fully auditable state machine with a centralized 17-field typed StateSchema, PostgreSQL checkpointing, and hard circuit breakers.
+        </p>
+      </div>
+
+      <!-- 6-Node Visual Flow Grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;">
+        
+        <div class="step-node">
+          <div class="step-num">01</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">Query Interpretation</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">Bilingual entity extraction</div>
+          </div>
+        </div>
+
+        <div class="step-node" style="border-color:rgba(99,102,241,.25);">
+          <div class="step-num" style="background:rgba(99,102,241,.2);color:#818CF8;border-color:rgba(99,102,241,.4);">02</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">Gemma 2 Model Armor</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">Jailbreak &amp; injection shield</div>
+          </div>
+        </div>
+
+        <div class="step-node">
+          <div class="step-num">03</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">pgvector SQL RRF</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">Dense + sparse cross-ranked</div>
+          </div>
+        </div>
+
+        <div class="step-node" style="border-color:rgba(245,158,11,.25);">
+          <div class="step-num" style="background:rgba(245,158,11,.2);color:#F59E0B;border-color:rgba(245,158,11,.4);">04</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">Temporal Chain Resolver</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">Supersession graph validation</div>
+          </div>
+        </div>
+
+        <div class="step-node" style="border-color:rgba(6,182,212,.3);">
+          <div class="step-num">05</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">Gemini 3.5 Flash Synthesis</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">Grounded multi-GO reasoning</div>
+          </div>
+        </div>
+
+        <div class="step-node" style="border-color:rgba(16,185,129,.3);">
+          <div class="step-num" style="background:rgba(16,185,129,.2);color:#10B981;border-color:rgba(16,185,129,.4);">06</div>
+          <div>
+            <div style="font-size:12.5px;font-weight:800;color:#fff;">Citation Integrity Check</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.42);">3-gram verbatim verification</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Grounding guarantee callout -->
+      <div class="glass" style="padding:12px 18px;display:flex;align-items:center;justify-content:space-between;border-color:rgba(6,182,212,.2);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <i data-lucide="shield-check" style="width:19px;height:19px;stroke:#06B6D4;"></i>
+          <span style="font-size:12px;font-weight:700;color:rgba(255,255,255,.75);">Human Verification Interrupt (Node 5) on &lt; 0.85 confidence or active conflict</span>
+        </div>
+        <span style="font-size:11px;font-weight:800;color:#06B6D4;background:rgba(6,182,212,.15);padding:3px 9px;border-radius:4px;">Strict Gate</span>
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:590px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(99,102,241,.22) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s3"
+          src="slide3_langgraph_pipeline.png"
+          alt="LangGraph 9-Node StateGraph Architecture"
+          class="img-glow-indigo float-a"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+          onerror="this.src='presentations/slide3_langgraph_pipeline.png'; this.onerror=function(){this.style.display='none';document.getElementById('ph-s3').style.display='flex';};"
+        />
+        <div id="ph-s3" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide3_langgraph_pipeline.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 4 — ENTERPRISE FORTIFICATION (THE 4 PILLARS)
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-em" id="slide-4">
+  <div style="width:100%;max-width:1560px;display:grid;grid-template-columns:1.15fr 1fr;gap:48px;padding:32px 64px;align-items:center;">
+
+    <!-- LEFT: 4 PILLARS GRID -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <div class="pill-em">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#10B981;box-shadow:0 0 10px rgba(16,185,129,.9);"></div>
+        <span style="font-size:11.5px;font-weight:800;color:#34D399;letter-spacing:.08em;text-transform:uppercase;">
+          Government-Grade Reliability &bull; Track 3 Fleet
+        </span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.8rem,3.4vw,2.95rem);font-weight:900;line-height:1.06;margin:0 0 10px;letter-spacing:-.03em;">
+          <span class="gt-white">Zero-Trust Enterprise /</span><br/>
+          <span class="gt-emerald">Security &amp; Observability</span>
+        </h2>
+        <p style="font-size:.94rem;color:rgba(255,255,255,.48);line-height:1.65;margin:0;">
+          Engineered to meet the stringent security, auditing, and compliance requirements of State Secretariats and Central Ministries under DPDP Act 2023.
+        </p>
+      </div>
+
+      <!-- 4 Pillars 2x2 Grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+        <!-- Pillar 1 -->
+        <div class="glass" style="padding:16px 18px;border-color:rgba(6,182,212,.22);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(6,182,212,.15);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="users" style="width:17px;height:17px;stroke:#06B6D4;"></i>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:#fff;">4-Persona RBAC Registry</div>
+          </div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.48);line-height:1.5;">
+            Forest, Finance, Personnel &amp; ITDA Admin personas with sovereign JWT session isolation.
+          </div>
+        </div>
+
+        <!-- Pillar 2 -->
+        <div class="glass" style="padding:16px 18px;border-color:rgba(245,158,11,.22);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(245,158,11,.15);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="history" style="width:17px;height:17px;stroke:#F59E0B;"></i>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:#fff;">Temporal Knowledge Graph</div>
+          </div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.48);line-height:1.5;">
+            PostgreSQL <code style="color:#FBBF24;">supersession_graph</code> tracking overrides, amendments, and sunset clauses across decades.
+          </div>
+        </div>
+
+        <!-- Pillar 3 -->
+        <div class="glass" style="padding:16px 18px;border-color:rgba(99,102,241,.25);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="shield" style="width:17px;height:17px;stroke:#818CF8;"></i>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:#fff;">Gemma 2 Model Armor</div>
+          </div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.48);line-height:1.5;">
+            Inline prompt-injection firewall, citizen PII auto-redaction &amp; scope screening.
+          </div>
+        </div>
+
+        <!-- Pillar 4 -->
+        <div class="glass" style="padding:16px 18px;border-color:rgba(16,185,129,.25);">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,.15);display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="activity" style="width:17px;height:17px;stroke:#10B981;"></i>
+            </div>
+            <div style="font-size:13px;font-weight:800;color:#fff;">OpenTelemetry &amp; Langfuse</div>
+          </div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.48);line-height:1.5;">
+            GenAI semantic convention spans (<code style="color:#34D399;">invoke_agent &rarr; chat &rarr; retrieval</code>) with zero CoT leaks.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:590px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(16,185,129,.22) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s4"
+          src="slide4_enterprise_fortification.png"
+          alt="Enterprise Digital Fortress - 4 Pillars"
+          class="img-glow-em float-b"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+          onerror="this.src='presentations/slide4_enterprise_fortification.png'; this.onerror=function(){this.style.display='none';document.getElementById('ph-s4').style.display='flex';};"
+        />
+        <div id="ph-s4" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide4_enterprise_fortification.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 5 — GOOGLE CLOUD DEPLOYMENT & PITCH VERDICT
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-cyan" id="slide-5">
+  <div style="width:100%;max-width:1560px;display:grid;grid-template-columns:1.15fr 1fr;gap:48px;padding:32px 64px;align-items:center;">
+
+    <!-- LEFT: CLOUD RUN & METRICS -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <div class="pill-cyan">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#06B6D4;box-shadow:0 0 10px rgba(6,182,212,.9);"></div>
+        <span style="font-size:11.5px;font-weight:800;color:#38BDF8;letter-spacing:.08em;text-transform:uppercase;">
+          Production Ready &bull; Google Cloud Platform
+        </span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.8rem,3.4vw,2.95rem);font-weight:900;line-height:1.06;margin:0 0 10px;letter-spacing:-.03em;">
+          <span class="gt-cyan">Sub-1.2s Synthesis /</span><br/>
+          <span class="gt-white">Live on Google Cloud Platform</span>
+        </h2>
+        <p style="font-size:.94rem;color:rgba(255,255,255,.48);line-height:1.65;margin:0;">
+          Containerized with multi-stage Docker builds, deployed to <strong>Google Cloud Run</strong> (<code style="color:#38BDF8;">asia-south1</code>) with GCS document artifact caching and PostgreSQL pgvector backend.
+        </p>
+      </div>
+
+      <!-- Deploy Specs 3 Cards -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+        <div class="metric-cyan">
+          <div style="font-size:10.5px;font-weight:800;color:rgba(6,182,212,.8);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">GCP Cloud Run</div>
+          <div style="font-size:2.0rem;font-weight:900;color:#38BDF8;line-height:1;letter-spacing:-.03em;">asia-south1</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.38);margin-top:6px;">Mumbai Low Latency</div>
+        </div>
+        <div class="metric-em">
+          <div style="font-size:10.5px;font-weight:800;color:rgba(16,185,129,.8);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Synthesis Speed</div>
+          <div style="font-size:2.0rem;font-weight:900;color:#10B981;line-height:1;letter-spacing:-.03em;">&lt; 1.2s</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.38);margin-top:6px;">Evidentiary Reason</div>
+        </div>
+        <div class="metric-indigo">
+          <div style="font-size:10.5px;font-weight:800;color:rgba(99,102,241,.8);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Hallucination</div>
+          <div style="font-size:2.0rem;font-weight:900;color:#818CF8;line-height:1;letter-spacing:-.03em;">0.00%</div>
+          <div style="font-size:11.5px;color:rgba(255,255,255,.38);margin-top:6px;">100% Verifiable Citations</div>
+        </div>
+      </div>
+
+      <!-- CTA Banner -->
+      <div class="cta-banner" style="padding:16px 24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:14.5px;font-weight:900;color:#fff;letter-spacing:-.01em;">
+              <span class="gt-cyan">Ready for State-Wide Secretariat Deployment</span>
+            </div>
+            <div style="font-size:12px;color:rgba(255,255,255,.48);margin-top:2px;">
+              Live Interactive UI &bull; 1-Click Note-Sheet PDF Export &bull; Verified Bounding Boxes
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="background:rgba(6,182,212,.2);border:1px solid rgba(6,182,212,.4);padding:6px 14px;border-radius:8px;font-size:12px;font-weight:800;color:#38BDF8;display:flex;align-items:center;gap:6px;">
+              <i data-lucide="check-circle-2" style="width:15px;height:15px;"></i>
+              <span>Track 3 Submission</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:590px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(6,182,212,.22) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s5"
+          src="slide5_gcp_deployment.png"
+          alt="Google Cloud Platform Global Telemetry"
+          class="img-glow-cyan float-a"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+          onerror="this.src='presentations/slide5_gcp_deployment.png'; this.onerror=function(){this.style.display='none';document.getElementById('ph-s5').style.display='flex';};"
+        />
+        <div id="ph-s5" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide5_gcp_deployment.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /slideContainer -->
+
+<script>
+  // ─── Interactive Slide Carousel Engine ───────────────────────────
+  (function () {
+    var TOTAL        = 5;
+    var current      = 0;
+    var transitioning= false;
+    var slides       = document.querySelectorAll('.slide');
+    var progressFill = document.getElementById('progressFill');
+    var slideCounter = document.getElementById('slideCounter');
+    var dotNav       = document.getElementById('dotNav');
+
+    function updateUI() {
+      if (progressFill) progressFill.style.width = (((current + 1) / TOTAL) * 100) + '%';
+      if (slideCounter) slideCounter.textContent  = (current + 1) + ' / ' + TOTAL;
+      
+      // Update dots
+      if (dotNav) {
+        var dots = dotNav.querySelectorAll('.nav-dot');
+        dots.forEach(function(dot, idx) {
+          if (idx === current) {
+            dot.classList.add('active');
+          } else {
+            dot.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    function goToSlide(index, dir) {
+      if (typeof dir === 'undefined') dir = index > current ? 1 : -1;
+      if (transitioning || index === current || index < 0 || index >= TOTAL) return;
+      transitioning = true;
+      var prev = current;
+      current  = index;
+      
+      slides[prev].classList.add(dir >= 0 ? 'exit-left' : 'exit-right');
+      setTimeout(function() { 
+        slides[prev].classList.remove('active', 'exit-left', 'exit-right'); 
+      }, 550);
+      
+      slides[current].style.transform = dir >= 0 ? 'translateX(70px)' : 'translateX(-70px)';
+      setTimeout(function() {
+        slides[current].style.transform = '';
+        slides[current].classList.add('active');
+      }, 20);
+      
+      updateUI();
+      setTimeout(function() { transitioning = false; }, 600);
+    }
+
+    function nextSlide() { goToSlide(current + 1,  1); }
+    function prevSlide() { goToSlide(current - 1, -1); }
+
+    // Expose goToSlide globally for dot clicks
+    window.goToSlide = function(idx) {
+      goToSlide(idx);
+    };
+
+    // Keyboard navigation (Always active)
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { 
+        e.preventDefault(); 
+        nextSlide(); 
+      }
+      if (e.key === 'ArrowLeft'  || e.key === 'PageUp') { 
+        e.preventDefault(); 
+        prevSlide(); 
+      }
+      if (e.key === 'Home') {
+        e.preventDefault();
+        goToSlide(0, -1);
+      }
+      if (e.key === 'End') {
+        e.preventDefault();
+        goToSlide(TOTAL - 1, 1);
+      }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    // Click navigation (left half = prev, right half = next)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('a, button, input, select, textarea, .nav-dot, #dotNav')) return;
+      if (e.clientX > window.innerWidth / 2) nextSlide(); 
+      else prevSlide();
+    });
+
+    // Touch swipe support
+    var tX = 0;
+    document.addEventListener('touchstart', function(e) { tX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend',   function(e) {
+      var d = tX - e.changedTouches[0].clientX;
+      if (Math.abs(d) > 50) { 
+        if (d > 0) nextSlide(); 
+        else prevSlide(); 
+      }
+    }, { passive: true });
+
+    // Initialize Lucide Icons & UI
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+    updateUI();
+  })();
+</script>
+</body>
+</html>

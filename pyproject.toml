@@ -1,0 +1,45 @@
+[project]
+name = "go-retrieval-citation-agent"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.2.11",
+    "langgraph-checkpoint-postgres>=1.0.6",
+    "psycopg[binary,pool]>=3.2",
+    "langchain-mcp-adapters",
+    "google-genai>=0.1.1",
+    "langchain-google-genai>=2.0.0",
+    "google-cloud-storage>=2.14.0",
+    "pydantic>=2.10,<3.0",
+    "fastapi[standard]>=0.141.1",
+    "uvicorn[standard]>=0.34.0",
+    "langfuse>=4.14.5",
+    "opentelemetry-instrumentation-langchain",
+    "opentelemetry-sdk>=1.27",
+    "opentelemetry-exporter-otlp>=1.27",
+    "python-dotenv>=1.0",
+    "pypdf>=6.16.2",
+    "pymupdf>=1.28.2",
+    "pillow>=12.3.0",
+    "pytesseract>=0.3.13",
+    "easyocr>=1.7.2",
+    "paddlepaddle>=3.3.1",
+    "paddleocr==2.7.3",
+    "numpy>=1.24,<2.0",
+    "paddle2onnx>=2.1.0",
+    "pdfplumber>=0.11.10",
+    "pdfminer-six>=20260107",
+    "regex>=2026.7.19",
+    "flashrank>=0.2.10",
+    "bcrypt>=5.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "deepeval",
+]
+
+[tool.uv]
+managed = true

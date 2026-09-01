@@ -1,0 +1,74 @@
+version: "3.8"
+
+services:
+  # 1. Sovereign Vector Store & Checkpointer
+  shasan_db:
+    image: pgvector/pgvector:pg16
+    container_name: shasan_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: shasanai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d shasanai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # 2. Local Ollama LLM Runtime & Embedding Engine
+  ollama:
+    image: ollama/ollama:latest
+    container_name: shasan_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+      - OLLAMA_MAX_LOADED_MODELS=2
+
+  # 3. ShasanAI Sovereign FastAPI Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: shasan_backend
+    restart: always
+    depends_on:
+      shasan_db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@shasan_db:5432/shasanai
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - LLM_MODEL_NAME=qwen2.5:7b
+      - EMBEDDING_MODEL_NAME=bge-m3
+      - APP_ENV=production
+      - OTEL_SERVICE_NAME=shasanai-backend
+    ports:
+      - "8000:8000"
+
+  # 4. Sovereign GovTech Web Interface
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: shasan_frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://backend:8000
+
+volumes:
+  pgdata:
+    driver: local
+  ollama_models:
+    driver: local

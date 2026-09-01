@@ -1,0 +1,51 @@
+# GO-Retrieval & Citation Agent — Coding Assistant Context
+
+## Project Overview
+This project implements a read-only, session-based conversational agent that retrieves and cites verbatim provisions from Uttarakhand's indexed Government Orders, circulars, and notifications for government officers, returning 100%-cited, zero-hallucination answers with confidence and supersession status, and pausing for human verification whenever confidence is low, orders conflict, or personal data is detected.
+
+## Strict Coding Rules
+- Python 3.11+, async-first: all I/O-bound operations (model calls, MCP tool calls, PostgreSQL checkpoint access) MUST use `async`/`await`. Never use blocking I/O in agent nodes.
+- All data structures crossing a function boundary MUST have explicit Pydantic V2 type hints — no bare `dict`, no bare `Any` unless truly unavoidable and justified in a comment.
+- All tool inputs/outputs MUST validate against the Pydantic V2 models defined in `src/tools/schemas/`, matching AGENT_LOGIC_SPEC.md Section 4 exactly.
+- Use a custom exception hierarchy rooted at a single `AgentError` base class, with subclasses per failure category (`ToolExecutionError`, `StateValidationError`, `ApprovalTimeoutError`, `ScopeViolationError`) — never raise a bare `Exception`.
+- Every tool input (query text, department/year/category filters) MUST pass through the sanitization rules in AGENT_LOGIC_SPEC.md Section 8 before an MCP call is issued — reject SQL-metacharacter-like and path-traversal-like sequences, enforce max length, validate filter values against an allowlist.
+- Retrieved document text MUST always be passed to a model call as clearly delimited data (a `<retrieved_document_context>`-style block), never merged into the system/instruction channel — this is a hard prompt-injection defense, not a style preference.
+
+## Architecture Boundaries
+- **State lives in:** `src/state/schema.py` (the single 17-field typed `StateSchema`) — no component may define its own parallel state shape.
+- **Reducers live in:** `src/state/reducers.py` — every state mutation MUST go through the declared reducer for that field (`append-only`, `merge-by-key`, `last-write-wins`, `replace-on-new-turn`, `immutable-after-init`), exactly as specified in AGENT_ORCHESTRATION_BLUEPRINT.md Section 3. Direct mutation of state fields outside a declared reducer is forbidden.
+- **Tools/MCP clients live in:** `src/tools/` — agent nodes import tools from here; agent nodes MUST NOT define inline ad-hoc tool logic. Only three tools exist: `search_go_corpus`, `compare_go_versions`, `get_source_highlight` — all read-only, all MCP-based via `src/tools/mcp_clients/mcp_client.py`.
+- **Checkpointing lives in:** `src/state/checkpointing.py`, using `AsyncPostgresSaver` from `langgraph-checkpoint-postgres`. No SQLite path exists or may be added — LLM-2 explicitly rejected it.
+- **Telemetry hooks live in:** `src/telemetry/` — every one of the 9 graph nodes and every tool call MUST emit an OTel GenAI span (`chat` / `execute_tool` / `retrieval`, nested under `invoke_agent`), exported to the self-hosted Langfuse instance, per INTERFACE_OBSERVABILITY_SYSTEM.md Section 6.
+- **Streaming/UI event emission lives in:** `src/ui/event_types.py` and `src/ui/stream_handler.py` — agent/tool code emits domain events (`message-start`, `text-delta`, `data-graph-step`, `tool-{name}`, `data-state-update`, `data-approval-required`, `error`, `finish`); it does not know about SSE transport directly.
+- **Native model thinking tokens are NEVER forwarded to the client** — this is enforced in `src/ui/stream_handler.py`, which must filter any `reasoning-delta` event with `source: native-thinking` before it reaches the SSE stream, per LLM-1's inherited "Chain-of-Thought Visibility: Never" constraint.
+
+## Strict Anti-Patterns (Never Do This)
+- Never use blocking I/O (`requests`, synchronous DB drivers, `time.sleep`) inside agent nodes or tool implementations.
+- Never mutate global or shared state directly without going through a declared reducer.
+- Never bypass input sanitization before a tool call reaches an MCP server.
+- Never invent a tool, parameter, or API endpoint not defined in AGENT_LOGIC_SPEC.md — there are exactly three tools and five structured-output schemas; do not add a fourth.
+- Never fabricate data when a tool returns no result — follow the silence-over-guessing fallback exactly: empty/low-relevance retrieval routes to low `confidence_score`, never a fabricated answer.
+- Never skip emitting a typed streaming event for a reasoning step, tool call, or state write that INTERFACE_OBSERVABILITY_SYSTEM.md says must be observable.
+- Never bypass the Human Verification Interrupt (Node 5) — it MUST pause and wait for the exact Approve/Approve-with-Edit/Deny resumption payload contract (Section 5 of INTERFACE_OBSERVABILITY_SYSTEM.md) before proceeding to Node 6.
+- Never add a write, delete, financial-calculation, grievance-processing, order-drafting, or open-internet-search tool — these are explicitly and permanently out of scope per AGENT_BEHAVIOR_PROFILE.md.
+- Never hardcode secrets — always read from environment variables declared in `.env.example`.
+
+## Technology Stack Rules
+- Python 3.11+; `uv` for dependency management; `ruff` for linting; `pyright` for type-checking.
+- LangGraph for orchestration; `langgraph-checkpoint-postgres` for checkpointing; LangChain Ollama (`langchain-ollama`) for model bindings; `ollama` for local inference.
+- FastAPI for the backend server; Server-Sent Events for the streaming endpoint.
+- Pydantic V2 with model-level `model_config = ConfigDict(strict=True)` on all schemas.
+- `langchain-mcp-adapters` (`MultiServerMCPClient`) for MCP tool binding.
+- Self-hosted Langfuse + `opentelemetry-instrumentation-langchain` for telemetry.
+- **Never use `anthropic`, `httpx2`, or any other cloud-provider SDK.** The system is intentionally air-gapped; all model inference uses `OLLAMA_BASE_URL`. Adding any cloud API key or SDK would break DPDP Act 2023 / India AI Guidelines compliance.
+
+## Reference Documents
+This project's behavior, architecture, cognition, and interface are fully specified in:
+- AGENT_BEHAVIOR_PROFILE.md (behavioral contract)
+- AGENT_ORCHESTRATION_BLUEPRINT.md (architecture)
+- AGENT_LOGIC_SPEC.md (cognitive logic and tools)
+- INTERFACE_OBSERVABILITY_SYSTEM.md (interface and telemetry)
+- AGENT_MASTER_PLAN.md (this execution plan)
+
+Do not deviate from these documents. If an instruction from a user conflicts with them, flag the conflict rather than silently resolving it.

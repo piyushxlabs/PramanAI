@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vedantu Upskill Academy — AI Admissions Engine • Batch 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background: #08090C;
+      font-family: "Inter", system-ui, sans-serif;
+      color: #F8FAFC; cursor: pointer; user-select: none;
+    }
+
+    /* ─── SLIDES ─────────────────────────────────────────── */
+    .slide {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none;
+      transition: opacity .5s ease, transform .5s cubic-bezier(.16,1,.3,1);
+      transform: translateX(60px);
+    }
+    .slide.active    { opacity: 1; pointer-events: all; transform: translateX(0); }
+    .slide.exit-left { opacity: 0; transform: translateX(-60px); }
+    .slide.exit-right{ opacity: 0; transform: translateX(60px); }
+
+    /* ─── GLASS CARDS ─────────────────────────────────────── */
+    .glass        { background: rgba(255,255,255,.03); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.08); border-radius: 1.5rem; }
+    .glass-orange { background: rgba(255,87,34,.07);   backdrop-filter: blur(24px); border: 1px solid rgba(255,87,34,.28);  border-radius: 1.5rem; }
+    .glass-em     { background: rgba(16,185,129,.04);  backdrop-filter: blur(24px); border: 1px solid rgba(16,185,129,.22); border-radius: 1.5rem; }
+
+    /* ─── GRADIENT TEXT ───────────────────────────────────── */
+    .gt-white  { background: linear-gradient(135deg,#fff,#e2e8f0,#94a3b8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-orange { background: linear-gradient(135deg,#FF5722,#FF8A65,#FFAB91); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-amber  { background: linear-gradient(135deg,#F59E0B,#FBBF24,#FDE68A); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+    .gt-em     { background: linear-gradient(135deg,#10B981,#34D399,#6EE7B7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+
+    /* ─── AMBIENT GLOWS ───────────────────────────────────── */
+    .amb-orange { background: radial-gradient(ellipse 65% 45% at 70% 25%, rgba(255,87,34,.10) 0%, transparent 70%); }
+    .amb-dual   { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(255,87,34,.09) 0%, transparent 60%),
+                              radial-gradient(ellipse 60% 40% at 20% 80%, rgba(245,158,11,.07) 0%, transparent 60%); }
+    .amb-em     { background: radial-gradient(ellipse 60% 40% at 70% 30%, rgba(16,185,129,.07) 0%, transparent 70%); }
+
+    /* ─── METRIC CARDS ────────────────────────────────────── */
+    .metric-orange { background: rgba(255,87,34,.07);  border: 1px solid rgba(255,87,34,.28);  border-radius: 1rem; padding: 1.1rem 1rem; }
+    .metric-amber  { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.28); border-radius: 1rem; padding: 1.1rem 1rem; }
+    .metric-em     { background: rgba(16,185,129,.07); border: 1px solid rgba(16,185,129,.28); border-radius: 1rem; padding: 1.1rem 1rem; }
+
+    /* ─── FEATURE ICON ────────────────────────────────────── */
+    .feat-icon { width:46px; height:46px; display:flex; align-items:center; justify-content:center; background:rgba(255,87,34,.14); border:1px solid rgba(255,87,34,.38); border-radius:13px; flex-shrink:0; }
+    .feat-icon svg { width:20px; height:20px; stroke:#FF5722; }
+
+    /* ─── PILL BADGE ──────────────────────────────────────── */
+    .pill-orange { display:inline-flex; align-items:center; gap:8px; background:rgba(255,87,34,.13); border:1px solid rgba(255,87,34,.38); border-radius:999px; padding:5px 16px; width:fit-content; }
+    .pill-em     { display:inline-flex; align-items:center; gap:8px; background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.35); border-radius:999px; padding:5px 16px; width:fit-content; }
+
+    /* ─── IMAGE GLOW ──────────────────────────────────────── */
+    .img-glow-orange { border:1px solid rgba(255,87,34,.32); box-shadow:0 0 45px rgba(255,87,34,.24), 0 28px 65px rgba(0,0,0,.72); border-radius:1.25rem; }
+    .img-glow-em     { border:1px solid rgba(16,185,129,.28); box-shadow:0 0 40px rgba(16,185,129,.2), 0 25px 60px rgba(0,0,0,.68); border-radius:1.25rem; }
+
+    /* ─── QR WRAP ─────────────────────────────────────────── */
+    .qr-wrap { background:rgba(255,87,34,.05); border:1px solid rgba(255,87,34,.30); border-radius:1.5rem; padding:1.5rem; display:inline-flex; flex-direction:column; align-items:center; gap:.9rem; animation:glowPulseO 2.8s ease-in-out infinite; }
+
+    /* ─── CTA BANNER ──────────────────────────────────────── */
+    .cta-banner { background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(16,185,129,.04)); border:1px solid rgba(16,185,129,.38); border-radius:1.5rem; animation:glowPulseG 2.5s ease-in-out infinite; }
+
+    /* ─── PROGRESS ────────────────────────────────────────── */
+    .prog-track { height:3px; background:rgba(255,255,255,.06); }
+    .prog-fill  { height:100%; border-radius:2px; background:linear-gradient(90deg,#FF5722,#F59E0B); transition:width .5s cubic-bezier(.16,1,.3,1); }
+
+    /* ─── ANIMATIONS ──────────────────────────────────────── */
+    @keyframes float     { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-14px)} }
+    @keyframes float1    { 0%,100%{transform:translateY(0)}  50%{transform:translateY(-10px)} }
+    @keyframes glowPulseO{ 0%,100%{box-shadow:0 0 20px rgba(255,87,34,.2)}   50%{box-shadow:0 0 55px rgba(255,87,34,.6), 0 0 110px rgba(255,87,34,.2)} }
+    @keyframes glowPulseG{ 0%,100%{box-shadow:0 0 20px rgba(16,185,129,.2)}  50%{box-shadow:0 0 55px rgba(16,185,129,.6), 0 0 110px rgba(16,185,129,.2)} }
+    @keyframes dotPulse  { 0%,100%{opacity:1}  50%{opacity:.3} }
+    @keyframes borderGlow{ 0%,100%{border-color:rgba(255,87,34,.3)} 50%{border-color:rgba(255,87,34,.7)} }
+
+    .float-a   { animation: float  6s ease-in-out infinite; }
+    .float-b   { animation: float1 6s ease-in-out 1.2s infinite; }
+    .pulse-dot { animation: dotPulse 2s infinite; }
+    ::-webkit-scrollbar { display: none; }
+
+    /* ─── IMAGE PLACEHOLDER ───────────────────────────────── */
+    .img-placeholder {
+      width: 100%; height: 100%;
+      border-radius: 1.25rem;
+      background: linear-gradient(135deg, #1a0800, #2d1100, #1a0800);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 12px;
+      border: 1px dashed rgba(255,87,34,.25);
+    }
+    .img-placeholder svg { width:48px; height:48px; stroke:rgba(255,87,34,.3); }
+    .img-placeholder span { font-size:12px; color:rgba(255,138,101,.35); font-weight:500; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════ TOP HEADER ════════════════════════════ -->
+<div style="position:fixed;top:0;left:0;right:0;z-index:100;height:56px;
+            background:rgba(8,9,12,.92);backdrop-filter:blur(24px);
+            border-bottom:1px solid rgba(255,255,255,.07);
+            display:flex;align-items:center;justify-content:space-between;padding:0 36px;">
+  <!-- Left: Logo + Divider + Brand -->
+  <div style="display:flex;align-items:center;gap:14px;">
+    <img src="../for_html_file_recording/vedantu_logo.png" alt="Vedantu" id="vLogo"
+         style="height:30px;object-fit:contain;"
+         onerror="document.getElementById('vLogo').style.display='none';document.getElementById('vText').style.display='block';" />
+    <span id="vText" style="display:none;font-size:16px;font-weight:900;color:#FF5722;letter-spacing:-.02em;">Vedantu</span>
+    <div style="width:1px;height:24px;background:rgba(255,255,255,.14);"></div>
+    <span style="font-size:13px;font-weight:600;color:rgba(255,255,255,.45);letter-spacing:.01em;">
+      Upskill Academy &nbsp;&bull;&nbsp; AI Admissions Engine
+    </span>
+  </div>
+  <!-- Right: Status -->
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="pulse-dot" style="width:9px;height:9px;border-radius:50%;background:#10B981;box-shadow:0 0 12px rgba(16,185,129,.9);"></div>
+    <span style="font-size:12.5px;font-weight:700;color:rgba(255,255,255,.42);letter-spacing:.04em;">Autonomous Agent &bull; 24/7 Live</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════ PROGRESS BAR ════════════════════════ -->
+<div class="prog-track" style="position:fixed;top:56px;left:0;right:0;z-index:99;">
+  <div class="prog-fill" id="progressFill" style="width:25%;"></div>
+</div>
+
+<!-- ════════════════════════════ SLIDE COUNTER ═══════════════════════ -->
+<div id="slideCounter" style="position:fixed;bottom:20px;right:32px;z-index:100;
+     font-size:11.5px;font-weight:700;letter-spacing:.12em;
+     color:rgba(255,255,255,.2);text-transform:uppercase;">1 / 4</div>
+
+<!-- ════════════════════════════ SLIDE CONTAINER ═════════════════════ -->
+<div id="slideContainer" style="position:fixed;inset:0;padding-top:59px;">
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 1 — CHALLENGE ACCEPTED
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide active amb-orange" id="slide-1">
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1.15fr;gap:40px;padding:28px 52px;align-items:center;">
+
+    <!-- LEFT -->
+    <div style="display:flex;flex-direction:column;gap:26px;">
+
+      <div class="pill-orange">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#FF5722;box-shadow:0 0 9px rgba(255,87,34,.9);"></div>
+        <span style="font-size:11.5px;font-weight:700;color:#FF8A65;letter-spacing:.07em;text-transform:uppercase;">
+          Challenge Accepted &nbsp;&bull;&nbsp; Timestamp 20:20
+        </span>
+      </div>
+
+      <div>
+        <h1 style="font-size:clamp(1.85rem,3.7vw,3.1rem);font-weight:900;line-height:1.07;margin:0 0 16px;letter-spacing:-.03em;">
+          <span class="gt-white">AI Income Master /</span><br/>
+          <span class="gt-orange">Batch 2 Admissions /</span><br/>
+          <span class="gt-white">Is Now 100% Autonomous.</span>
+        </h1>
+        <p style="font-size:.93rem;color:rgba(255,255,255,.42);line-height:1.75;margin:0;">
+          Harsh Sir issued a challenge at 20:20. This is the live response &mdash; a fully
+          autonomous AI counselor handling every Batch&nbsp;2 admission inquiry end-to-end,
+          around the clock, with zero human involvement.
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="metric-orange">
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,87,34,.65);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Harsh Sir's Challenge</div>
+          <div style="font-size:2.3rem;font-weight:900;color:#FF8A65;line-height:1;letter-spacing:-.04em;">24/7</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;">Engine</div>
+        </div>
+        <div class="metric-em">
+          <div style="font-size:10.5px;font-weight:700;color:rgba(16,185,129,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Current Status</div>
+          <div style="font-size:2.3rem;font-weight:900;color:#10B981;line-height:1;letter-spacing:-.04em;">Live</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:6px;">&amp; Deployed</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:560px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-32px;background:radial-gradient(ellipse at center,rgba(255,87,34,.2) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s1"
+          src="../for_html_file_recording/harsh_sir_challenge_2020.png"
+          alt="Harsh Sir Challenge 20:20"
+          class="img-glow-orange float-a"
+          style="width:100%;height:100%;object-fit:contain;background:rgba(0,0,0,0.4);border-radius:1.25rem;display:block;position:relative;z-index:1;"
+        />
+        <div id="ph-s1" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>harsh_sir_challenge_2020.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 2 — AI COUNSELOR ARCHITECTURE
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-dual" id="slide-2">
+  <div style="flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:40px;padding:28px 52px;align-items:center;">
+
+    <!-- LEFT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:540px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-30px;background:radial-gradient(ellipse at center,rgba(255,87,34,.17) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s2"
+          src="../for_html_file_recording/slide2_ai_counselor.png"
+          alt="AI Counselor Architecture"
+          class="img-glow-orange float-b"
+          style="width:100%;height:100%;object-fit:cover;object-position:15% center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+        />
+        <div id="ph-s2" class="img-placeholder" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide2_ai_counselor.png</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COPY -->
+    <div style="display:flex;flex-direction:column;gap:22px;">
+
+      <div class="pill-orange">
+        <span style="font-size:11.5px;font-weight:700;color:#FF8A65;letter-spacing:.07em;text-transform:uppercase;">Engine Capabilities</span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.7rem,3.4vw,2.8rem);font-weight:900;line-height:1.08;margin:0 0 12px;letter-spacing:-.03em;">
+          <span class="gt-orange">Sub-3s Response &bull;</span><br/>
+          <span class="gt-white">Organic Plan Upselling</span>
+        </h2>
+        <p style="font-size:.93rem;color:rgba(255,255,255,.42);line-height:1.72;margin:0;">
+          The AI counselor resolves objections, upgrades plan tiers, and sends dynamic checkout links
+          &mdash; all within a single WhatsApp conversation.
+        </p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:11px;">
+
+        <div class="glass-orange" style="padding:16px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon"><i data-lucide="zap"></i></div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:#fff;margin-bottom:4px;">Zero-Coding &amp; Mobile Objection Cleared</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);">Instant FAQs answered in under 3&nbsp;seconds</div>
+          </div>
+        </div>
+
+        <div class="glass-orange" style="padding:16px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon"><i data-lucide="trending-up"></i></div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:#fff;margin-bottom:4px;">Organic Tier Upgrade &#8377;999 &#8594; &#8377;1,499</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);">Pitching Live Doubts &amp; Hiring Pathways live</div>
+          </div>
+        </div>
+
+        <div class="glass-orange" style="padding:16px 20px;display:flex;align-items:center;gap:16px;">
+          <div class="feat-icon"><i data-lucide="external-link"></i></div>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:#fff;margin-bottom:4px;">Dynamic 1-Click Tracked Checkout</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.38);">Session-bound direct payment URL per lead</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 3 — SPEED-TO-LEAD & DRIP ENGINE
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-orange" id="slide-3">
+  <div style="flex:1;display:grid;grid-template-columns:1fr 1.15fr;gap:40px;padding:28px 52px;align-items:center;height:100%;">
+
+    <!-- LEFT COPY -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+      <div class="pill-orange">
+        <span style="font-size:11.5px;font-weight:700;color:#FF8A65;letter-spacing:.07em;text-transform:uppercase;">Speed to Lead = Revenue</span>
+      </div>
+
+      <div>
+        <h2 style="font-size:clamp(1.6rem,3.2vw,2.6rem);font-weight:900;line-height:1.09;margin:0 0 12px;letter-spacing:-.03em;">
+          <span class="gt-white">Recover Abandoned /</span><br/>
+          <span class="gt-orange">Admissions Automatically.</span>
+        </h2>
+        <p style="font-size:.9rem;color:rgba(255,255,255,.42);line-height:1.7;margin:0;">
+          The drip engine re-engages every dropped lead automatically &mdash;
+          no human needed, zero revenue left on the table.
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+
+        <div class="metric-orange" style="text-align:center;padding:18px 10px;">
+          <div style="font-size:2.1rem;font-weight:900;color:#FF8A65;letter-spacing:-.04em;">&lt;&nbsp;3&nbsp;sec</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.38);margin-top:6px;font-weight:600;">Instant WhatsApp Reply</div>
+        </div>
+
+        <div class="metric-amber" style="text-align:center;padding:18px 10px;">
+          <div style="font-size:2.1rem;font-weight:900;color:#F59E0B;letter-spacing:-.04em;">114</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.38);margin-top:6px;font-weight:600;">Leads Recovered via Drip</div>
+        </div>
+
+        <div class="metric-amber" style="text-align:center;padding:18px 10px;">
+          <div style="font-size:2.1rem;font-weight:900;color:#F59E0B;letter-spacing:-.04em;">83.8%</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.38);margin-top:6px;font-weight:600;">Top-Tier Upsell Rate</div>
+        </div>
+
+        <div class="metric-em" style="text-align:center;padding:18px 10px;">
+          <div style="font-size:2.1rem;font-weight:900;color:#10B981;letter-spacing:-.04em;">24/7</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.38);margin-top:6px;font-weight:600;">Zero Human Downtime</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT IMAGE -->
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:100%;max-width:560px;aspect-ratio:16/9;overflow:hidden;">
+        <div style="position:absolute;inset:-28px;background:radial-gradient(ellipse at center,rgba(255,87,34,.17) 0%,transparent 68%);pointer-events:none;border-radius:50%;z-index:0;"></div>
+        <img
+          id="img-s3"
+          src="../for_html_file_recording/slide3_revenue_growth.png"
+          alt="Revenue Growth"
+          class="img-glow-orange float-a"
+          style="width:100%;height:100%;object-fit:cover;object-position:center;border-radius:1.25rem;display:block;position:relative;z-index:1;"
+        />
+        <div id="ph-s3" class="img-placeholder" style="height:345px;display:none;">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+          <span>slide3_revenue_growth.png</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════════
+     SLIDE 4 — LIVE QR CODE DEMO CTA
+══════════════════════════════════════════════════════════════════ -->
+<div class="slide amb-em" id="slide-4">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+              padding:18px 60px 24px;gap:22px;text-align:center;overflow:hidden;">
+
+    <!-- Pill + Headline -->
+    <div>
+      <div class="pill-em" style="margin:0 auto 16px;">
+        <div class="pulse-dot" style="width:7px;height:7px;border-radius:50%;background:#10B981;box-shadow:0 0 9px rgba(16,185,129,.9);"></div>
+        <span style="font-size:11.5px;font-weight:700;color:#10B981;letter-spacing:.07em;text-transform:uppercase;">
+          Live Demo &nbsp;&bull;&nbsp; WhatsApp Bot
+        </span>
+      </div>
+      <h2 style="font-size:clamp(1.65rem,3.3vw,2.7rem);font-weight:900;line-height:1.09;margin:0;letter-spacing:-.03em;">
+        <span class="gt-white">Test The AI Counselor Live /</span><br/>
+        <span class="gt-orange">On Your Phone Right Now</span>
+      </h2>
+    </div>
+
+    <!-- Content Row -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:56px;flex-wrap:nowrap;">
+
+      <!-- QR Code Block -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+        <div class="qr-wrap">
+          <img
+            id="qrImg"
+            src="https://api.qrserver.com/v1/create-qr-code/?data=https://wa.me/917579144969?text=Hi&size=300x300&color=ff5722&bgcolor=08090c"
+            width="175" height="175"
+            alt="WhatsApp QR Code"
+            style="border-radius:10px;display:block;"
+          />
+          <div style="display:flex;align-items:center;gap:9px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="#25D366">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+            </svg>
+            <span style="font-size:13.5px;font-weight:700;color:#FF8A65;">wa.me/917579144969</span>
+          </div>
+        </div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,.25);letter-spacing:.09em;text-transform:uppercase;">Scan to Open WhatsApp</div>
+      </div>
+
+      <!-- Divider -->
+      <div style="width:1px;height:155px;background:linear-gradient(to bottom,transparent,rgba(255,255,255,.1),transparent);flex-shrink:0;"></div>
+
+      <!-- Info Card -->
+      <div style="display:flex;flex-direction:column;gap:15px;text-align:left;max-width:310px;">
+        <div class="glass" style="padding:18px 24px;border-color:rgba(255,87,34,.16);">
+          <div style="font-size:10.5px;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.11em;margin-bottom:8px;">Direct WhatsApp</div>
+          <div style="font-size:1.5rem;font-weight:900;color:#fff;letter-spacing:-.02em;">+91 75791 44969</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#FF5722;flex-shrink:0;box-shadow:0 0 8px rgba(255,87,34,.8);"></div>
+            <span style="font-size:13px;color:rgba(255,255,255,.52);">Send &ldquo;Hi&rdquo; &mdash; AI replies in under 3&nbsp;seconds</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#FF5722;flex-shrink:0;box-shadow:0 0 8px rgba(255,87,34,.8);"></div>
+            <span style="font-size:13px;color:rgba(255,255,255,.52);">AI counsels, upsells &amp; clears objections live</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#FF5722;flex-shrink:0;box-shadow:0 0 8px rgba(255,87,34,.8);"></div>
+            <span style="font-size:13px;color:rgba(255,255,255,.52);">1-click tracked checkout link sent instantly</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CTA Footer Banner -->
+    <div class="cta-banner" style="padding:18px 48px;width:100%;max-width:740px;">
+      <div style="font-size:clamp(.95rem,2.1vw,1.4rem);font-weight:900;letter-spacing:-.02em;">
+        <span class="gt-em">Ready For Batch 2 Deployment This Week!</span>
+        <span class="gt-white"> &nbsp;&bull;&nbsp; 100% Production Ready</span>
+      </div>
+      <div style="font-size:12.5px;color:rgba(255,255,255,.37);margin-top:7px;">
+        Autonomous &nbsp;&bull;&nbsp; Zero Downtime &nbsp;&bull;&nbsp; Organic Upselling &nbsp;&bull;&nbsp; Drip Recovery Engine
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+</div><!-- /slideContainer -->
+
+<script>
+  // ─── Image fallback handler ──────────────────────────────────────
+  ['s1','s2','s3'].forEach(function(id) {
+    var img = document.getElementById('img-' + id);
+    var ph  = document.getElementById('ph-'  + id);
+    if (img && ph) {
+      img.onerror = function() {
+        img.style.display = 'none';
+        ph.style.display  = 'flex';
+      };
+    }
+  });
+
+  // ─── Navigation engine ───────────────────────────────────────────
+  (function () {
+    var TOTAL        = 4;
+    var current      = 0;
+    var transitioning= false;
+    var slides       = document.querySelectorAll('.slide');
+    var progressFill = document.getElementById('progressFill');
+    var slideCounter = document.getElementById('slideCounter');
+
+    function updateUI() {
+      if (progressFill) progressFill.style.width = (((current + 1) / TOTAL) * 100) + '%';
+      if (slideCounter) slideCounter.textContent  = (current + 1) + ' / ' + TOTAL;
+    }
+
+    function goToSlide(index, dir) {
+      if (typeof dir === 'undefined') dir = index > current ? 1 : -1;
+      if (transitioning || index === current || index < 0 || index >= TOTAL) return;
+      transitioning = true;
+      var prev = current;
+      current  = index;
+      slides[prev].classList.add(dir >= 0 ? 'exit-left' : 'exit-right');
+      setTimeout(function() { slides[prev].classList.remove('active', 'exit-left', 'exit-right'); }, 560);
+      slides[current].style.transform = dir >= 0 ? 'translateX(60px)' : 'translateX(-60px)';
+      setTimeout(function() {
+        slides[current].style.transform = '';
+        slides[current].classList.add('active');
+      }, 20);
+      updateUI();
+      setTimeout(function() { transitioning = false; }, 630);
+    }
+
+    function nextSlide() { goToSlide(current + 1,  1); }
+    function prevSlide() { goToSlide(current - 1, -1); }
+
+    // Keyboard
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+      if (e.key === 'ArrowLeft'  || e.key === 'PageUp')                    { e.preventDefault(); prevSlide(); }
+      if (e.key === 'F11') {
+        e.preventDefault();
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    // Click (left = prev, right = next)
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('a, button, input, select, textarea')) return;
+      if (e.clientX > window.innerWidth / 2) nextSlide(); else prevSlide();
+    });
+
+    // Touch swipe
+    var tX = 0;
+    document.addEventListener('touchstart', function(e) { tX = e.touches[0].clientX; }, { passive: true });
+    document.addEventListener('touchend',   function(e) {
+      var d = tX - e.changedTouches[0].clientX;
+      if (Math.abs(d) > 55) { if (d > 0) nextSlide(); else prevSlide(); }
+    }, { passive: true });
+
+    lucide.createIcons();
+    updateUI();
+  })();
+</script>
+</body>
+</html>

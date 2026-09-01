@@ -1,0 +1,83 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# PramanAI .gitignore — Production-Grade for Google Hackathon Submission
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Environment & Secrets (NEVER commit)
+.env
+*.env.local
+*.env.production
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+.Python
+
+# Build artifacts
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+.venv/
+env/
+venv/
+ENV/
+
+# Testing & Quality Tools
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
+.pyright_cache/
+.deepeval/
+
+# IDE & OS
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Frontend build artifacts
+frontend/.next/
+frontend/node_modules/
+frontend/dist/
+
+# Agent & Customisation configs (not for public repo)
+.agents/
+
+# Dev scratch & archive directories
+archive/
+scratch/
+zdevolopment/
+.zdevolopment/
+
+# Downloaded Models & Weights
+data/models/
+
+# Temporary cleanup scripts
+_cleanup_step1.ps1
+_cleanup_step2.ps1
+
+presentations/demo video assets/
+*.mp4
+*.mp3
+*.zip
